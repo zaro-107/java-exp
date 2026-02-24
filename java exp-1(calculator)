@@ -1,0 +1,91 @@
+import java.util.Scanner;
+
+public class Calculator {
+    int ch, num1, num2;
+
+    public int addNums(int n1, int n2) {
+        return n1 + n2;
+    }
+
+    public int subNums(int n1, int n2) {
+        return n1 - n2;
+    }
+
+    public long mulNums(int n1, int n2) {
+        return (long) n1 * n2;
+    }
+
+    public float divNums(int n1, int n2) {
+        return (float) n1 / n2;
+    }
+
+    public int calcMod(int n1, int n2) {
+        return n1 % n2;
+    }
+
+    public static void main(String args[]) {
+        Calculator calc = new Calculator();
+        Scanner sc = new Scanner(System.in);
+
+        do {
+            System.out.println("\nEnter first number:");
+            calc.num1 = sc.nextInt();
+
+            System.out.println("Enter second number:");
+            calc.num2 = sc.nextInt();
+
+            System.out.println(
+                "Select operation:\n" +
+                "1. Add\n" +
+                "2. Subtract\n" +
+                "3. Multiply\n" +
+                "4. Divide\n" +
+                "5. Modulus\n" +
+                "0. Exit"
+            );
+
+            calc.ch = sc.nextInt();
+
+            switch (calc.ch) {
+                case 1:
+                    System.out.println("Addition: " +
+                            calc.addNums(calc.num1, calc.num2));
+                    break;
+
+                case 2:
+                    System.out.println("Subtraction: " +
+                            calc.subNums(calc.num1, calc.num2));
+                    break;
+
+                case 3:
+                    System.out.println("Multiplication: " +
+                            calc.mulNums(calc.num1, calc.num2));
+                    break;
+
+                case 4:
+                    if (calc.num2 != 0)
+                        System.out.println("Division: " +
+                                calc.divNums(calc.num1, calc.num2));
+                    else
+                        System.out.println("Cannot divide by zero");
+                    break;
+
+                case 5:
+                    System.out.println("Modulus: " +
+                            calc.calcMod(calc.num1, calc.num2));
+                    break;
+
+                case 0:
+                    System.out.println("Exiting Calculator...");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice");
+            }
+
+        } while (calc.ch != 0);
+
+        sc.close();
+    }
+}
+
