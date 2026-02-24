@@ -1,0 +1,111 @@
+public class MainForVehicle { 
+ 
+    public static void main(String[] args) { 
+ 
+        // Creating vehicle objects 
+        Vehicle carA = new Vehicle(); 
+ 
+        Vehicle carB = new Vehicle("Toyota", "Camry", 1750000, "Silver");         carB.fuelCategory = 'C';         carB.setManufacturingCode("MH12AB4567"); 
+ 
+        Vehicle carC = new Vehicle('D', 2890000, "KA05MN7788"); 
+ 
+        // Using copy constructor to duplicate carB 
+        Vehicle carD = new Vehicle(carB); 
+ 
+        // Storing all vehicles in an array 
+        Vehicle[] garage = { carA, carB, carC, carD }; 
+ 
+        // Display header for table System.out.println("======================================================== ========================================"); 
+        System.out.printf("%-12s %-12s %-6s %-8s %-6s %-6s %-12s %-8s %-12s %-5s%n", 
+                "Make", "Variant", "Year", "Color", "Fuel", "Seats", "Price", "Mileage", "MfgCode", "Srv"); 
+        
+System.out.println("======================================================== ========================================"); 
+ 
+        for (Vehicle current : garage) { 
+ 
+            double mileageValue; 
+ 
+            if (current.fuelCategory == 'D')                 mileageValue = current.calcMileage(50, 650);             else if (current.fuelCategory == 'P' || current.fuelCategory == 'C')                 mileageValue = current.calcMileage(40, 650);             else                 mileageValue = 0; 
+ 
+            Vehicle.printTabular(current, mileageValue); 
+        } 
+ 
+        
+System.out.println("======================================================== ========================================\n"); 
+ 
+        // Simulating vehicle operations         for (Vehicle current : garage) { 
+ 
+            System.out.println(">>> Running vehicle: " + current.make + " " + current.variant); 
+ 
+            current.start();             current.drive();             current.changeSpeed(80);             current.stop(); 
+ 
+            System.out.println(); 
+        } 
+    } 
+} 
+Vehicle.Java 
+class Vehicle { 
+ 
+    // Public properties     public String make;     public String variant;     public java.time.Year manufactureYear;     public String bodyColor;     public char fuelCategory;   // E = Electric, P = Petrol, D = Diesel, C = CNG     public double cost;     public int seatCount; 
+ 
+    // Private data members     private String manufacturingCode;     private int serviceCount; 
+ 
+    // Default constructor with preset vehicle details     public Vehicle() {         make = "Honda";         variant = "Civic"; 
+        manufactureYear = java.time.Year.of(2026);         bodyColor = "Red";         fuelCategory = 'P';         seatCount = 5;         cost = 2200000; 
+    } 
+ 
+    // Constructor for custom vehicle information     public Vehicle(String make, String variant, double cost, String bodyColor) {         this.make = make;         this.variant = variant;         this.cost = cost;         this.bodyColor = bodyColor;         this.manufactureYear = java.time.Year.of(2025);         this.fuelCategory = 'P';         this.seatCount = 5; 
+    } 
+ 
+    // Constructor including fuel type and manufacturing code     public Vehicle(char fuelCategory, double cost, String manufacturingCode) {         this.make = "Mahindra";         this.variant = "XUV700";         this.manufactureYear = java.time.Year.of(2024);         this.bodyColor = "Grey";         this.fuelCategory = fuelCategory;         this.cost = cost;         this.seatCount = 7;         this.manufacturingCode = manufacturingCode; 
+    } 
+ 
+    // Copy constructor to clone existing vehicle     public Vehicle(Vehicle other) {         this.make = other.make;         this.variant = other.variant;         this.manufactureYear = other.manufactureYear;         this.bodyColor = other.bodyColor;         this.fuelCategory = other.fuelCategory;         this.cost = other.cost;         this.seatCount = other.seatCount;         this.manufacturingCode = other.manufacturingCode;         this.serviceCount = other.serviceCount; 
+    } 
+ 
+    // Setter and getter methods 
+    public void setManufacturingCode(String code) {         manufacturingCode = code; 
+    } 
+ 
+    public String getManufacturingCode() {         return manufacturingCode; 
+    } 
+ 
+    public void setServiceCount(int count) {         serviceCount = count; 
+    } 
+ 
+    public int getServiceCount() {         return serviceCount; 
+    } 
+ 
+    // Basic vehicle operations     public void start() { 
+        System.out.println("Engine started successfully."); 
+    } 
+ 
+    public void drive() { 
+        System.out.println("Vehicle is now moving."); 
+    } 
+ 
+    public void stop() { 
+        System.out.println("Engine switched o	."); 
+    } 
+ 
+    public void changeSpeed(int speed) { 
+        System.out.println("Speed adjusted to " + speed + " kmph"); 
+    } 
+ 
+    public double calcMileage(double fuelUsed, double distanceCovered) {         return distanceCovered / fuelUsed; 
+    } 
+ 
+    // Method to print vehicle details in table format     public static void printTabular(Vehicle v, double mileage) { 
+        System.out.printf( 
+                "%-10s %-10s %-6s %-8s %-5s %-5d %-10.2f %-8.2f %-10s %-5d%n",                 v.make, 
+                v.variant, 
+                v.manufactureYear, 
+                v.bodyColor, 
+                v.fuelCategory, 
+                v.seatCount, 
+                v.cost,                 mileage, 
+                v.getManufacturingCode(), 
+                v.getServiceCount() 
+        ); 
+    } 
+} 
