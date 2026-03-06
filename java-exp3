@@ -1,1 +1,238 @@
+#Book
+import java.time.LocalDate;
+
+public class Book {
+
+    public String title;
+    public String author;
+    public LocalDate dateOFPub;
+    public String ISBN;
+    public double price;
+    public String genre;
+    private double agegroup;
+
+    // Default Constructor
+    public Book() {
+        this.title = "Game of Thrones";
+        this.author = "George R.R. Martin";
+        this.dateOFPub = LocalDate.of(1996, 8, 6);
+        this.ISBN = "9780553103540";
+        this.price = 999.0;
+        this.genre = "Fantasy";
+        this.agegroup = 18.0;
+    }
+
+    // Parameterized Constructor with Exception Handling
+    public Book(String title, String author, LocalDate dateOFPub,
+            String ISBN, double price, String genre, double agegroup)
+            throws invalidInputException {
+
+        if (title == null || title.trim().isEmpty()) {
+            throw new invalidInputException("Title cannot be empty.");
+        }
+
+        if (author == null || author.trim().isEmpty()) {
+            throw new invalidInputException("Author name cannot be empty.");
+        }
+
+        if (ISBN == null || ISBN.trim().isEmpty()) {
+            throw new invalidInputException("ISBN cannot be empty.");
+        }
+
+        if (price < 0) {
+            throw new invalidInputException("Price cannot be negative.");
+        }
+
+        if (agegroup <= 0) {
+            throw new invalidInputException("Age group must be positive.");
+        }
+
+        if (dateOFPub.isAfter(LocalDate.now())) {
+            throw new invalidInputException("Publication date cannot be in the future.");
+        }
+
+        this.title = title;
+        this.author = author;
+        this.dateOFPub = dateOFPub;
+        this.ISBN = ISBN;
+        this.price = price;
+        this.genre = genre;
+        this.agegroup = agegroup;
+    }
+
+    // Copy Constructor
+    public Book(Book other) throws invalidInputException {
+        this(other.title, other.author, other.dateOFPub,
+                other.ISBN, other.price, other.genre, other.agegroup);
+    }
+
+    // Display Method
+    public void displayBook() {
+        System.out.printf("%-20s %-20s %-15s %-15s %-10.2f %-15s %-5.0f\n",
+                title,
+                author,
+                dateOFPub,
+                ISBN,
+                price,
+                genre,
+                agegroup);
+    }
+}
+
+# error exception
+public class invalidInputException extends Exception {
+
+    public invalidInputException(String message) {
+        super(message);
+    }
+}
+
+##  ArrayListOFBooks
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+public class ArrayListOFBooks {
+
+    public static void main(String[] args) {
+
+        ArrayList<Book> bookList = new ArrayList<>();
+
+        try {
+
+            // 1) Default constructor
+            Book b1 = new Book();
+
+            // 2) Parameterized constructor
+            Book b2 = new Book(
+                    "Atomic Habits",
+                    "James Clear",
+                    LocalDate.of(2018, 10, 16),
+                    "9780735211292",
+                    599.0,
+                    "Self Help",
+                    15
+            );
+
+            // 3) Parameterized constructor
+            Book b3 = new Book(
+                    "Rich Dad Poor Dad",
+                    "Robert Kiyosaki",
+                    LocalDate.of(1997, 4, 1),
+                    "9781612680194",
+                    499.0,
+                    "Finance",
+                    16
+            );
+
+            // 4) Parameterized constructor
+            Book b4 = new Book(
+                    "The Alchemist",
+                    "Paulo Coelho",
+                    LocalDate.of(1988, 5, 1),
+                    "9780061122415",
+                    399.0,
+                    "Fiction",
+                    14
+            );
+
+            // 5) Parameterized constructor
+            Book b5 = new Book(
+                    "Clean Code",
+                    "Robert C. Martin",
+                    LocalDate.of(2008, 8, 1),
+                    "9780132350884",
+                    799.0,
+                    "Programming",
+                    18
+            );
+
+            // 6) Copy constructor
+            Book b6 = new Book(b2);
+
+            // Add all books
+            bookList.add(b1);
+            bookList.add(b2);
+            bookList.add(b3);
+            bookList.add(b4);
+            bookList.add(b5);
+            bookList.add(b6);
+
+            // OPERATIONS
+            System.out.println("\n All Books in Inventory:\n");
+            bookList.forEach(book -> book.displayBook());
+
+            // size()
+            System.out.println("\nTotal Books: " + bookList.size());
+
+            // get()
+            System.out.println("\nFirst Book (get(0)):");
+            bookList.get(0).displayBook();
+
+            // indexOf()
+            System.out.println("\nIndex of b2: " + bookList.indexOf(b2));
+
+            // contains()
+            System.out.println("Contains b3? " + bookList.contains(b3));
+
+            // remove(Book)
+            bookList.remove(b3);
+            System.out.println("\nAfter Removing 'Rich Dad Poor Dad':\n");
+            bookList.forEach(book -> book.displayBook());
+            System.out.println("Books Now: " + bookList.size());
+
+            // set(index, Book)
+            Book newBook = new Book(
+                    "Deep Work",
+                    "Cal Newport",
+                    LocalDate.of(2016, 1, 5),
+                    "9781455586691",
+                    650.0,
+                    "Productivity",
+                    16
+            );
+
+            if (bookList.size() > 1) {
+                bookList.set(1, newBook);
+            }
+
+            System.out.println("\nAfter Replacing index 1 with 'Deep Work':\n");
+            bookList.forEach(book -> book.displayBook());
+
+            // addAll()
+            ArrayList<Book> extraBooks = new ArrayList<>();
+
+            extraBooks.add(new Book(
+                    "Think and Grow Rich",
+                    "Napoleon Hill",
+                    LocalDate.of(1937, 3, 1),
+                    "9781585424337",
+                    450.0,
+                    "Motivation",
+                    16
+            ));
+
+            extraBooks.add(new Book(
+                    "Ikigai",
+                    "Hector Garcia",
+                    LocalDate.of(2016, 8, 29),
+                    "9780143130727",
+                    420.0,
+                    "Lifestyle",
+                    12
+            ));
+
+            bookList.addAll(extraBooks);
+
+            System.out.println("\nAfter addAll(extraBooks):\n");
+            bookList.forEach(book -> book.displayBook());
+
+            System.out.println("\nFinal Total Books: " + bookList.size());
+
+        } catch (invalidInputException e) {
+
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
 
