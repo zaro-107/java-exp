@@ -1,0 +1,168 @@
+#vector class
+
+public class VectorClass {
+
+    double[] comps;
+
+    public VectorClass(double[] arr) throws InvalidVectorException {
+        if (arr == null || arr.length == 0) {
+            throw new InvalidVectorException("Invalid Vector");
+        }
+        if (arr.length != 2 && arr.length != 3) {
+            throw new InvalidVectorException("Only 2D or 3D supported");
+        }
+        comps = arr.clone();
+    }
+
+    public VectorClass add(VectorClass v) throws InvalidVectorException {
+        checkDimension(v);
+        double results[] = new double[comps.length];
+        for (int i = 0; i < comps.length; i++) {
+            results[i] = comps[i] + v.comps[i];
+        }
+        return new VectorClass(results);
+    }
+
+    public VectorClass substract(VectorClass v) throws InvalidVectorException {
+        checkDimension(v);
+        double results[] = new double[comps.length];
+        for (int i = 0; i < comps.length; i++) {
+            results[i] = comps[i] - v.comps[i];
+        }
+        return new VectorClass(results);
+    }
+
+    public double dotProduct(VectorClass v) throws InvalidVectorException {
+        checkDimension(v);
+        double results = 0;
+        for (int i = 0; i < comps.length; i++) {
+            results += comps[i] * v.comps[i];
+        }
+        return results;
+    }
+
+    void checkDimension(VectorClass v) throws InvalidVectorException {
+        if (comps.length != v.comps.length) {
+            throw new InvalidVectorException("Incompatible Vector Dimension. Operation cannot be done");
+        }
+    }
+
+    public void print() {
+        if (comps.length == 2) {
+            System.out.print("Vector( " + comps[0] + " , " + comps[1] + " )");
+        } else {
+            System.out.print("Vector( " + comps[0] + " , " + comps[1] + " , " + comps[2] + " )"); // FIXED
+        }
+    }
+}
+#invalid exception 
+
+public class InvalidVectorException extends Exception {
+
+    public InvalidVectorException(String m) {
+        super(m);
+    }
+}
+#main class
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        try {
+            // Create 2D vectors
+            double[] v1Arr = {2.0, 3.0};
+            double[] v2Arr = {4.0, 5.0};
+
+            VectorClass v1 = new VectorClass(v1Arr);
+            VectorClass v2 = new VectorClass(v2Arr);
+
+            // Addition
+            VectorClass sum = v1.add(v2);
+            System.out.print("Addition: ");
+            sum.print();
+            System.out.println();
+
+            // Subtraction
+            VectorClass diff = v1.substract(v2);
+            System.out.print("Subtraction: ");
+            diff.print();
+            System.out.println();
+
+            // Dot Product
+            double dot = v1.dotProduct(v2);
+            System.out.println("Dot Product: " + dot);
+
+            // Create 3D vectors
+            double[] v3Arr = {1.0, 2.0, 3.0};
+            double[] v4Arr = {4.0, 5.0, 6.0};
+
+            VectorClass v3 = new VectorClass(v3Arr);
+            VectorClass v4 = new VectorClass(v4Arr);
+
+            VectorClass sum3D = v3.add(v4);
+            System.out.print("3D Addition: ");
+            sum3D.print();
+            System.out.println();
+
+        } catch (InvalidVectorException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+    }
+}
+#vector operation(for 3D vector)
+
+public class VectorOperation {
+
+    double x, y, z;
+
+    // Constructor
+    public VectorOperation(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    // Addition
+    public VectorOperation add(VectorOperation v) {
+        return new VectorOperation(
+                this.x + v.x,
+                this.y + v.y,
+                this.z + v.z
+        );
+    }
+
+    // Subtraction
+    public VectorOperation subtract(VectorOperation v) {
+        return new VectorOperation(
+                this.x - v.x,
+                this.y - v.y,
+                this.z - v.z
+        );
+    }
+
+    // Dot Product
+    public double dotProduct(VectorOperation v) {
+        return this.x * v.x + this.y * v.y + this.z * v.z;
+    }
+
+    // Cross Product (IMPORTANT for 3D)
+    public VectorOperation crossProduct(VectorOperation v) {
+        return new VectorOperation(
+                this.y * v.z - this.z * v.y,
+                this.z * v.x - this.x * v.z,
+                this.x * v.y - this.y * v.x
+        );
+    }
+
+    // Magnitude
+    public double magnitude() {
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    // Print
+    public void print() {
+        System.out.println("Vector( " + x + " , " + y + " , " + z + " )");
+    }
+}
