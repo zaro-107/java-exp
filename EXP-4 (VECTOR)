@@ -1,0 +1,112 @@
+class Vector {
+
+    double x, y, z;
+
+    // Constructor
+    Vector(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    // Method to add two vectors
+    Vector add(Vector v) {
+        return new Vector(
+                this.x + v.x,
+                this.y + v.y,
+                this.z + v.z
+        );
+    }
+
+    // Method to subtract two vectors
+    Vector subtract(Vector v) {
+        return new Vector(
+                this.x - v.x,
+                this.y - v.y,
+                this.z - v.z
+        );
+    }
+
+    // Method to calculate dot product
+    double dotProduct(Vector v) {
+        return this.x * v.x
+                + this.y * v.y
+                + this.z * v.z;
+    }
+
+    // Display vector
+    void display() {
+        System.out.println("(" + x + ", " + y + ", " + z + ")");
+    }
+}
+
+### Main code
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        // Input first vector
+        System.out.println("Enter first vector (x y z): ");
+        double x1 = sc.nextDouble();
+        double y1 = sc.nextDouble();
+        double z1 = sc.nextDouble();
+
+        // Input second vector
+        System.out.println("Enter second vector (x y z): ");
+        double x2 = sc.nextDouble();
+        double y2 = sc.nextDouble();
+        double z2 = sc.nextDouble();
+
+        Vector v1 = new Vector(x1, y1, z1);
+        Vector v2 = new Vector(x2, y2, z2);
+
+        int choice;
+
+        do {
+            System.out.println("\n--- VECTOR OPERATIONS MENU ---");
+            System.out.println("1. Add Vectors");
+            System.out.println("2. Subtract Vectors");
+            System.out.println("3. Dot Product");
+            System.out.println("4. Exit");
+            System.out.print("Enter your choice: ");
+
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    Vector sum = v1.add(v2);
+                    System.out.print("Result (Addition): ");
+                    sum.display();
+                    break;
+
+                case 2:
+                    Vector diff = v1.subtract(v2);
+                    System.out.print("Result (Subtraction): ");
+                    diff.display();
+                    break;
+
+                case 3:
+                    double dot = v1.dotProduct(v2);
+                    System.out.println("Dot Product: " + dot);
+                    break;
+
+                case 4:
+                    System.out.println("Exiting program...");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice! Try again.");
+            }
+
+        } while (choice != 4);
+
+        sc.close();
+    }
+}
+
+
