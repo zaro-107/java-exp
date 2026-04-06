@@ -1,0 +1,280 @@
+1.) employee
+  
+3.)	import java.util.*;
+4.)	
+5.)	// Enum for Role
+6.)	enum Role {
+7.)	    SWE, HR, MANAGER
+8.)	}
+9.)	
+10.)	// Abstract Employee Class
+11.)	abstract class Employee {
+12.)	
+13.)	    private String name;
+14.)	    private String panNo;
+15.)	    private String joiningDate;
+16.)	    private String designation;
+17.)	    private int empId;
+18.)	
+19.)	    public Employee(String name, String panNo, String joiningDate,
+20.)	            String designation, int empId) {
+21.)	        this.name = name;
+22.)	        this.panNo = panNo;
+23.)	        this.joiningDate = joiningDate;
+24.)	        this.designation = designation;
+25.)	        this.empId = empId;
+26.)	    }
+27.)	
+28.)	    public abstract double calcCTC();
+29.)	
+30.)	    public void display() {
+31.)	        System.out.println("\nID: " + empId
+32.)	                + " | Name: " + name
+33.)	                + " | Role: " + designation);
+34.)	    }
+35.)	}
+36.)	
+37.)	// Full Time Employee
+38.)	class FullTimeEmployee extends Employee {
+39.)	
+40.)	    protected double baseSalary;
+41.)	    protected double perfBonus;
+42.)	    protected double hiringCommission;
+43.)	    protected Role role;
+44.)	
+45.)	    public FullTimeEmployee(String name, String panNo, String joiningDate,
+46.)	            String designation, int empId,
+47.)	            double baseSalary, double perfBonus,
+48.)	            double hiringCommission, Role role) {
+49.)	
+50.)	        super(name, panNo, joiningDate, designation, empId);
+51.)	        this.baseSalary = baseSalary;
+52.)	        this.perfBonus = perfBonus;
+53.)	        this.hiringCommission = hiringCommission;
+54.)	        this.role = role;
+55.)	    }
+56.)	
+57.)	    @Override
+58.)	    public double calcCTC() {
+59.)	        switch (role) {
+60.)	            case SWE:
+61.)	                return baseSalary + perfBonus;
+62.)	            case HR:
+63.)	                return baseSalary + hiringCommission;
+64.)	            default:
+65.)	                return baseSalary;
+66.)	        }
+67.)	    }
+68.)	}
+69.)	
+70.)	// Contract Employee
+71.)	class ContractEmployee extends Employee {
+72.)	
+73.)	    private int noOfHours;
+74.)	    private double hourlyRate;
+75.)	
+76.)	    public ContractEmployee(String name, String panNo, String joiningDate,
+77.)	            String designation, int empId,
+78.)	            int noOfHours, double hourlyRate) {
+79.)	
+80.)	        super(name, panNo, joiningDate, designation, empId);
+81.)	        this.noOfHours = noOfHours;
+82.)	        this.hourlyRate = hourlyRate;
+83.)	    }
+84.)	
+85.)	    @Override
+86.)	    public double calcCTC() {
+87.)	        return noOfHours * hourlyRate;
+88.)	    }
+89.)	}
+90.)	
+91.)	// Manager Class
+92.)	class Manager extends FullTimeEmployee {
+93.)	
+94.)	    private double travelAllowance;
+95.)	    private double eduAllowance;
+96.)	
+97.)	    public Manager(String name, String panNo, String joiningDate,
+98.)	            int empId, double baseSalary, double perfBonus,
+99.)	            double travelAllowance, double eduAllowance) {
+100.)	
+101.)	        super(name, panNo, joiningDate, "Manager", empId,
+102.)	                baseSalary, perfBonus, 0, Role.MANAGER);
+103.)	
+104.)	        this.travelAllowance = travelAllowance;
+105.)	        this.eduAllowance = eduAllowance;
+106.)	    }
+107.)	
+108.)	    @Override
+109.)	    public double calcCTC() {
+110.)	        return baseSalary + perfBonus + travelAllowance + eduAllowance;
+111.)	    }
+112.)	}
+113.)	
+114.)	// Payroll Class
+115.)	class Payroll {
+116.)	
+117.)	    public void process(Employee emp) {
+118.)	        emp.display();
+119.)	        System.out.println("CTC: ₹" + emp.calcCTC());
+120.)	        System.out.println("------------------------");
+121.)	    }
+122.)	}
+123.)	
+
+
+2.) Main
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+        Payroll payroll = new Payroll();
+
+        Employee[] employees = new Employee[10];
+        int count = 0;
+
+        int choice;
+
+        do {
+            System.out.println("\n===== MENU =====");
+            System.out.println("1. Add Full-Time Employee");
+            System.out.println("2. Add Contract Employee");
+            System.out.println("3. Add Manager");
+            System.out.println("4. Display Payroll");
+            System.out.println("5. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+
+                case 1:
+                    if (count >= employees.length) {
+                        System.out.println("Employee limit reached!");
+                        break;
+                    }
+
+                    sc.nextLine();
+                    System.out.print("Enter Name: ");
+                    String name = sc.nextLine();
+
+                    System.out.print("Enter PAN: ");
+                    String pan = sc.nextLine();
+
+                    System.out.print("Enter Joining Date: ");
+                    String date = sc.nextLine();
+
+                    System.out.print("Enter ID: ");
+                    int id = sc.nextInt();
+
+                    System.out.print("Enter Base Salary: ");
+                    double base = sc.nextDouble();
+
+                    System.out.print("Enter Role (1-SWE, 2-HR): ");
+                    int r = sc.nextInt();
+
+                    if (r == 1) {
+                        System.out.print("Enter Performance Bonus: ");
+                        double bonus = sc.nextDouble();
+
+                        employees[count++] = new FullTimeEmployee(
+                                name, pan, date, "SWE", id,
+                                base, bonus, 0, Role.SWE);
+
+                    } else {
+                        System.out.print("Enter Hiring Commission: ");
+                        double comm = sc.nextDouble();
+
+                        employees[count++] = new FullTimeEmployee(
+                                name, pan, date, "HR", id,
+                                base, 0, comm, Role.HR);
+                    }
+                    break;
+
+                case 2:
+                    if (count >= employees.length) {
+                        System.out.println("Employee limit reached!");
+                        break;
+                    }
+
+                    sc.nextLine();
+                    System.out.print("Enter Name: ");
+                    name = sc.nextLine();
+
+                    System.out.print("Enter PAN: ");
+                    pan = sc.nextLine();
+
+                    System.out.print("Enter Joining Date: ");
+                    date = sc.nextLine();
+
+                    System.out.print("Enter ID: ");
+                    id = sc.nextInt();
+
+                    System.out.print("Enter Hours: ");
+                    int hrs = sc.nextInt();
+
+                    System.out.print("Enter Hourly Rate: ");
+                    double rate = sc.nextDouble();
+
+                    employees[count++] = new ContractEmployee(
+                            name, pan, date, "Contract", id, hrs, rate);
+                    break;
+
+                case 3:
+                    if (count >= employees.length) {
+                        System.out.println("Employee limit reached!");
+                        break;
+                    }
+
+                    sc.nextLine();
+                    System.out.print("Enter Name: ");
+                    name = sc.nextLine();
+
+                    System.out.print("Enter PAN: ");
+                    pan = sc.nextLine();
+
+                    System.out.print("Enter Joining Date: ");
+                    date = sc.nextLine();
+
+                    System.out.print("Enter ID: ");
+                    id = sc.nextInt();
+
+                    System.out.print("Enter Base Salary: ");
+                    base = sc.nextDouble();
+
+                    System.out.print("Enter Performance Bonus: ");
+                    double bonus = sc.nextDouble();
+
+                    System.out.print("Enter Travel Allowance: ");
+                    double ta = sc.nextDouble();
+
+                    System.out.print("Enter Education Allowance: ");
+                    double edu = sc.nextDouble();
+
+                    employees[count++] = new Manager(
+                            name, pan, date, id, base, bonus, ta, edu);
+                    break;
+
+                case 4:
+                    System.out.println("\n--- Payroll Details ---");
+                    for (int i = 0; i < count; i++) {
+                        payroll.process(employees[i]);
+                    }
+                    break;
+
+                case 5:
+                    System.out.println("Exiting...");
+                    break;
+
+                default:
+                    System.out.println("Invalid Choice!");
+            }
+
+        } while (choice != 5);
+
+        sc.close();
+    }
+}
