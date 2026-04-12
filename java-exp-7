@@ -1,0 +1,266 @@
+import java.io.*;
+import java.util.*;
+
+public class StudentCSV {
+
+    static String fileName = "Students.csv";
+    static Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) {
+
+        try {
+            int choice;
+
+            do {
+                System.out.println("\n===== MENU =====");
+                System.out.println("1. Display Students");
+                System.out.println("2. Add Student");
+                System.out.println("3. Update Marks + Percentage + Grade");
+                System.out.println("4. Delete Student");
+                System.out.println("5. Search Student");
+                System.out.println("6. Sort by Percentage");
+                System.out.println("7. Exit");
+
+                System.out.print("Enter choice: ");
+                choice = sc.nextInt();
+
+                switch (choice) {
+                    case 1: displayFile(); break;
+                    case 2: addStudent(); break;
+                    case 3: updateData(); break;
+                    case 4: deleteStudent(); break;
+                    case 5: searchStudent(); break;
+                    case 6: sortByPercentage(); break;
+                    case 7: System.out.println("Exiting..."); break;
+                    default: System.out.println("Invalid choice!");
+                }
+
+            } while (choice != 7);
+
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+        }
+
+        // Exception Demo
+        try {
+            new FileReader("WrongFile.csv");
+        } catch (IOException e) {
+            System.out.println("\nException Demo: " + e.getMessage());
+        }
+    }
+
+    // ================= DISPLAY =================
+    static void displayFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        String line;
+
+        System.out.println("\n--- Student Data ---");
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+
+        br.close();
+    }
+
+    // ================= ADD =================
+    static void addStudent() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
+
+        System.out.print("Enter ID: ");
+        int id = sc.nextInt();
+
+        System.out.print("Enter Name: ");
+        String name = sc.next();
+
+        System.out.print("Enter Branch: ");
+        String branch = sc.next();
+
+        System.out.print("Enter Marks1: ");
+        int m1 = sc.nextInt();
+
+        System.out.print("Enter Marks2: ");
+        int m2 = sc.nextInt();
+
+        System.out.print("Enter Marks3: ");
+        int m3 = sc.nextInt();
+
+        // marks4 & marks5 initially 0
+        bw.write(id + "," + name + "," + branch + "," +
+                m1 + "," + m2 + "," + m3 + ",0,0,0,NA\n");
+
+        bw.close();
+        System.out.println(" Student Added!");
+    }
+
+    // ================= UPDATE =================
+    static void updateData() throws IOException {
+        File inputFile = new File(fileName);
+        File tempFile = new File("temp.csv");
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+
+        String line = br.readLine(); // header
+
+        // Fix header (add grade column if not present)
+        if (!line.contains("grade")) {
+            bw.write(line + ",grade\n");
+        } else {
+            bw.write(line + "\n");
+        }
+
+        while ((line = br.readLine()) != null) {
+
+            line = line.replace("\"", ""); // remove quotes if any
+            String[] data = line.split(",");
+
+            // Ask for marks4 & marks5 if zero
+            if (data[6].equals("0") || data[7].equals("0")) {
+                System.out.println("\nEnter marks for Student ID: " + data[0]);
+
+                System.out.print("Marks4: ");
+                data[6] = sc.next();
+
+                System.out.print("Marks5: ");
+                data[7] = sc.next();
+            }
+
+            // Calculate percentage
+            double total = 0;
+            for (int i = 3; i <= 7; i++) {
+                total += Integer.parseInt(data[i]);
+            }
+
+            double percentage = total / 5;
+            data[8] = String.format("%.2f", percentage);
+
+            String grade = getGrade(percentage);
+
+            // Write updated row
+            bw.write(String.join(",", data) + "," + grade + "\n");
+        }
+
+        br.close();
+        bw.close();
+
+        inputFile.delete();
+        tempFile.renameTo(inputFile);
+
+        System.out.println(" Updated Successfully!");
+    }
+
+    // ================= GRADE =================
+    static String getGrade(double p) {
+        if (p >= 90) return "O";
+        else if (p >= 80) return "A+";
+        else if (p >= 70) return "A";
+        else return "B";
+    }
+
+    // ================= DELETE =================
+    static void deleteStudent() throws IOException {
+        System.out.print("Enter Student ID to delete: ");
+        String id = sc.next();
+
+        File inputFile = new File(fileName);
+        File tempFile = new File("temp.csv");
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+
+            line = line.replace("\"", ""); // clean quotes
+            String[] data = line.split(",");
+
+            // keep header
+            if (data[0].equals("studentId")) {
+                bw.write(line + "\n");
+                continue;
+            }
+
+            // delete logic
+            if (!data[0].trim().equals(id)) {
+                bw.write(String.join(",", data) + "\n");
+            }
+        }
+
+        br.close();
+        bw.close();
+
+        inputFile.delete();
+        tempFile.renameTo(inputFile);
+
+        System.out.println(" Student Deleted!");
+    }
+
+    // ================= SEARCH =================
+    static void searchStudent() throws IOException {
+        System.out.print("Search by (1-ID / 2-Name): ");
+        int ch = sc.nextInt();
+
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        String line;
+        boolean found = false;
+
+        if (ch == 1) {
+            System.out.print("Enter ID: ");
+            String id = sc.next();
+
+            while ((line = br.readLine()) != null) {
+                line = line.replace("\"", "");
+                String[] data = line.split(",");
+
+                if (data[0].equals(id)) {
+                    System.out.println(line);
+                    found = true;
+                }
+            }
+        } else {
+            System.out.print("Enter Name: ");
+            String name = sc.next();
+
+            while ((line = br.readLine()) != null) {
+                if (line.contains("," + name + ",")) {
+                    System.out.println(line);
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) System.out.println(" Not Found");
+
+        br.close();
+    }
+
+    // ================= SORT =================
+    static void sortByPercentage() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        List<String[]> list = new ArrayList<>();
+
+        String header = br.readLine();
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            line = line.replace("\"", "");
+            list.add(line.split(","));
+        }
+
+        // Sort descending
+        list.sort((a, b) -> Double.compare(
+                Double.parseDouble(b[8]),
+                Double.parseDouble(a[8])
+        ));
+
+        System.out.println("\n--- Sorted by Percentage ---");
+        System.out.println(header);
+
+        for (String[] row : list) {
+            System.out.println(String.join(",", row));
+        }
+
+        br.close();
+    }
+}
