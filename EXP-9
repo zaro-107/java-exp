@@ -1,0 +1,135 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class RestaurantManager {
+
+    // Database credentials - Update these with your MySQL details
+    static final String DB_URL = "jdbc:mysql://localhost:3306/restaurant_db";
+    static final String USER = "root";
+    static final String PASS = "1502";
+
+    public static void main(String[] args) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             Scanner scanner = new Scanner(System.in)) {
+
+            System.out.println("Connected to database successfully.");
+
+            // 1. Insert 10 records into Restaurant
+            System.out.println("\n--- Inserting 10 Records into Restaurant ---");
+            String insertRestQuery = "INSERT INTO Restaurant (Id, Name, Address) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(insertRestQuery)) {
+                for (int i = 1; i <= 10; i++) {
+                    System.out.println("Enter details for Restaurant #" + i);
+                    System.out.print("ID (int): ");
+                    pstmt.setInt(1, scanner.nextInt());
+                    scanner.nextLine(); // consume newline
+                    System.out.print("Name: ");
+                    pstmt.setString(2, scanner.nextLine());
+                    System.out.print("Address: ");
+                    pstmt.setString(3, scanner.nextLine());
+                    pstmt.executeUpdate();
+                }
+                System.out.println("10 Restaurants inserted successfully!");
+            }
+
+            // 2. Insert 10 records into MenuItem
+            System.out.println("\n--- Inserting 10 Records into MenuItem ---");
+            String insertMenuQuery = "INSERT INTO MenuItem (Id, Name, Price, ResId) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(insertMenuQuery)) {
+                for (int i = 1; i <= 10; i++) {
+                    System.out.println("Enter details for MenuItem #" + i);
+                    System.out.print("ID (int): ");
+                    pstmt.setInt(1, scanner.nextInt());
+                    scanner.nextLine(); // consume newline
+                    System.out.print("Name: ");
+                    pstmt.setString(2, scanner.nextLine());
+                    System.out.print("Price (double): ");
+                    pstmt.setDouble(3, scanner.nextDouble());
+                    System.out.print("Restaurant ID (int): ");
+                    pstmt.setInt(4, scanner.nextInt());
+                    scanner.nextLine(); // consume newline
+                    pstmt.executeUpdate();
+                }
+                System.out.println("10 Menu Items inserted successfully!");
+            }
+
+            // 3. Select all records from MenuItem table where price <= 100
+            System.out.println("\n--- Menu Items with Price <= 100 ---");
+            String selectCheapItems = "SELECT * FROM MenuItem WHERE Price <= 100";
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(selectCheapItems)) {
+                printResultSet(rs);
+            }
+
+            // 4. Select all records from MenuItem which are available in Restaurant named "Cafe Java"
+            System.out.println("\n--- Menu Items at 'Cafe Java' ---");
+            String selectCafeJavaItems = "SELECT m.Id, m.Name, m.Price, m.ResId " +
+                                         "FROM MenuItem m JOIN Restaurant r ON m.ResId = r.Id " +
+                                         "WHERE r.Name = 'Cafe Java'";
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(selectCafeJavaItems)) {
+                printResultSet(rs);
+            }
+
+            // 5. Update all records from MenuItem table where price <= 100 to price = 200
+            System.out.println("\n--- Updating Items with Price <= 100 to 200 ---");
+            String updateQuery = "UPDATE MenuItem SET Price = 200 WHERE Price <= 100";
+            try (Statement stmt = conn.createStatement()) {
+                int rowsAffected = stmt.executeUpdate(updateQuery);
+                System.out.println("Rows updated: " + rowsAffected);
+                
+                // Printing the updated table state
+                try (ResultSet rs = stmt.executeQuery("SELECT * FROM MenuItem")) {
+                    System.out.println("Menu Items after Update:");
+                    printResultSet(rs);
+                }
+            }
+
+            // 6. Delete all records from MenuItem table where name starts with P
+            System.out.println("\n--- Deleting Items where Name starts with 'P' ---");
+            String deleteQuery = "DELETE FROM MenuItem WHERE Name LIKE 'P%'";
+            try (Statement stmt = conn.createStatement()) {
+                int rowsAffected = stmt.executeUpdate(deleteQuery);
+                System.out.println("Rows deleted: " + rowsAffected);
+                
+                // Printing the final table state
+                try (ResultSet rs = stmt.executeQuery("SELECT * FROM MenuItem")) {
+                    System.out.println("Menu Items after Deletion:");
+                    printResultSet(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to print ResultSet data in a tabular format.
+     */
+    private static void printResultSet(ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+
+        // Print Column Names
+        for (int i = 1; i <= columnsNumber; i++) {
+            System.out.printf("%-15s", rsmd.getColumnName(i));
+        }
+        System.out.println("\n------------------------------------------------------------");
+
+        // Print Rows
+        boolean hasData = false;
+        while (rs.next()) {
+            hasData = true;
+            for (int i = 1; i <= columnsNumber; i++) {
+                System.out.printf("%-15s", rs.getString(i));
+            }
+            System.out.println();
+        }
+        
+        if (!hasData) {
+            System.out.println("(No records found)");
+        }
+        System.out.println();
+    }
+}
