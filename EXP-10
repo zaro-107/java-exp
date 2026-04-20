@@ -1,0 +1,229 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+
+import java.sql.*;
+
+public class RestaurantJavaFX extends Application {
+
+    // Database credentials
+    static final String DB_URL = "jdbc:mysql://localhost:3306/restaurant_db";
+    static final String USER = "root";
+    static final String PASS = "1502"; // Using your password
+
+    private Connection conn;
+    private TextArea outputArea;
+    private VBox formContainer;
+
+    @Override
+    public void start(Stage primaryStage) {
+        connectToDatabase();
+
+        BorderPane root = new BorderPane();
+
+        // --- Top: Menu Bar ---
+        MenuBar menuBar = new MenuBar();
+
+        // Restaurant Menu
+        Menu menuRestaurant = new Menu("Restaurant");
+        javafx.scene.control.MenuItem itemInsertRest = new javafx.scene.control.MenuItem("Insert");
+        javafx.scene.control.MenuItem itemSelectRest = new javafx.scene.control.MenuItem("View All");
+        menuRestaurant.getItems().addAll(itemInsertRest, itemSelectRest);
+
+        // Menu Item... Menu
+        Menu menuItems = new Menu("Menu Item");
+        javafx.scene.control.MenuItem itemInsertMenu = new javafx.scene.control.MenuItem("Insert");
+        javafx.scene.control.MenuItem itemSelectMenu = new javafx.scene.control.MenuItem("View All");
+        javafx.scene.control.MenuItem itemUpdateMenu = new javafx.scene.control.MenuItem("Update Price");
+        javafx.scene.control.MenuItem itemDeleteMenu = new javafx.scene.control.MenuItem("Delete by Name");
+        menuItems.getItems().addAll(itemInsertMenu, itemSelectMenu, itemUpdateMenu, itemDeleteMenu);
+
+        menuBar.getMenus().addAll(menuRestaurant, menuItems);
+        root.setTop(menuBar);
+
+        // --- Center: Dynamic Form Container ---
+        formContainer = new VBox(10);
+        formContainer.setPadding(new Insets(15));
+        root.setCenter(formContainer);
+
+        // --- Bottom: Output Area ---
+        outputArea = new TextArea();
+        outputArea.setEditable(false);
+        outputArea.setFont(Font.font("Monospaced", 12)); // Monospaced for tabular alignment
+        outputArea.setPrefHeight(250);
+        root.setBottom(outputArea);
+
+        // --- Event Handlers for Menus ---
+        itemInsertRest.setOnAction(e -> showInsertRestaurantForm());
+        itemSelectRest.setOnAction(e -> executeSelect("SELECT * FROM Restaurant"));
+        
+        itemInsertMenu.setOnAction(e -> showInsertMenuItemForm());
+        itemSelectMenu.setOnAction(e -> executeSelect("SELECT * FROM MenuItem"));
+        itemUpdateMenu.setOnAction(e -> showUpdateMenuItemForm());
+        itemDeleteMenu.setOnAction(e -> showDeleteMenuItemForm());
+
+        // --- Stage Setup ---
+        Scene scene = new Scene(root, 700, 600);
+        primaryStage.setTitle("Restaurant Database Manager (JavaFX)");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // ==========================================
+    // UI Form Builders
+    // ==========================================
+
+    private void showInsertRestaurantForm() {
+        formContainer.getChildren().clear();
+        TextField txtId = new TextField(); txtId.setPromptText("Restaurant ID (int)");
+        TextField txtName = new TextField(); txtName.setPromptText("Name");
+        TextField txtAddress = new TextField(); txtAddress.setPromptText("Address");
+        Button btnSubmit = new Button("Insert Restaurant");
+
+        btnSubmit.setOnAction(e -> {
+            String query = "INSERT INTO Restaurant (Id, Name, Address) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, Integer.parseInt(txtId.getText()));
+                pstmt.setString(2, txtName.getText());
+                pstmt.setString(3, txtAddress.getText());
+                int rows = pstmt.executeUpdate();
+                log("Success: " + rows + " Restaurant(s) inserted.");
+            } catch (Exception ex) {
+                log("Error: " + ex.getMessage());
+            }
+        });
+
+        formContainer.getChildren().addAll(new Label("--- Insert New Restaurant ---"), txtId, txtName, txtAddress, btnSubmit);
+    }
+
+    private void showInsertMenuItemForm() {
+        formContainer.getChildren().clear();
+        TextField txtId = new TextField(); txtId.setPromptText("Menu Item ID (int)");
+        TextField txtName = new TextField(); txtName.setPromptText("Name");
+        TextField txtPrice = new TextField(); txtPrice.setPromptText("Price (double)");
+        TextField txtResId = new TextField(); txtResId.setPromptText("Restaurant ID (int)");
+        Button btnSubmit = new Button("Insert Menu Item");
+
+        btnSubmit.setOnAction(e -> {
+            String query = "INSERT INTO MenuItem (Id, Name, Price, ResId) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, Integer.parseInt(txtId.getText()));
+                pstmt.setString(2, txtName.getText());
+                pstmt.setDouble(3, Double.parseDouble(txtPrice.getText()));
+                pstmt.setInt(4, Integer.parseInt(txtResId.getText()));
+                int rows = pstmt.executeUpdate();
+                log("Success: " + rows + " Menu Item(s) inserted.");
+            } catch (Exception ex) {
+                log("Error: " + ex.getMessage());
+            }
+        });
+
+        formContainer.getChildren().addAll(new Label("--- Insert New Menu Item ---"), txtId, txtName, txtPrice, txtResId, btnSubmit);
+    }
+
+    private void showUpdateMenuItemForm() {
+        formContainer.getChildren().clear();
+        TextField txtThreshold = new TextField(); txtThreshold.setPromptText("Update items with price LESS than or EQUAL to...");
+        TextField txtNewPrice = new TextField(); txtNewPrice.setPromptText("Set new price to...");
+        Button btnSubmit = new Button("Update Prices");
+
+        btnSubmit.setOnAction(e -> {
+            String query = "UPDATE MenuItem SET Price = ? WHERE Price <= ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setDouble(1, Double.parseDouble(txtNewPrice.getText()));
+                pstmt.setDouble(2, Double.parseDouble(txtThreshold.getText()));
+                int rows = pstmt.executeUpdate();
+                log("Success: " + rows + " Menu Item(s) updated.");
+                executeSelect("SELECT * FROM MenuItem"); // Refresh view
+            } catch (Exception ex) {
+                log("Error: " + ex.getMessage());
+            }
+        });
+
+        formContainer.getChildren().addAll(new Label("--- Update Menu Item Prices ---"), txtThreshold, txtNewPrice, btnSubmit);
+    }
+
+    private void showDeleteMenuItemForm() {
+        formContainer.getChildren().clear();
+        TextField txtPrefix = new TextField(); txtPrefix.setPromptText("Delete items starting with letter(s)... (e.g., 'P')");
+        Button btnSubmit = new Button("Delete Items");
+
+        btnSubmit.setOnAction(e -> {
+            String query = "DELETE FROM MenuItem WHERE Name LIKE ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, txtPrefix.getText() + "%");
+                int rows = pstmt.executeUpdate();
+                log("Success: " + rows + " Menu Item(s) deleted.");
+                executeSelect("SELECT * FROM MenuItem"); // Refresh view
+            } catch (Exception ex) {
+                log("Error: " + ex.getMessage());
+            }
+        });
+
+        formContainer.getChildren().addAll(new Label("--- Delete Menu Items ---"), txtPrefix, btnSubmit);
+    }
+
+    // ==========================================
+    // Database Operations & Utilities
+    // ==========================================
+
+    private void connectToDatabase() {
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            System.out.println("Database connected successfully.");
+        } catch (SQLException e) {
+            System.out.println("Database connection failed: " + e.getMessage());
+        }
+    }
+
+    private void executeSelect(String query) {
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+            StringBuilder sb = new StringBuilder();
+
+            // Append Column Names
+            for (int i = 1; i <= columnsNumber; i++) {
+                sb.append(String.format("%-20s", rsmd.getColumnName(i)));
+            }
+            sb.append("\n----------------------------------------------------------------------\n");
+
+            // Append Rows
+            boolean hasData = false;
+            while (rs.next()) {
+                hasData = true;
+                for (int i = 1; i <= columnsNumber; i++) {
+                    sb.append(String.format("%-20s", rs.getString(i)));
+                }
+                sb.append("\n");
+            }
+            if (!hasData) sb.append("(No records found)\n");
+
+            outputArea.setText(sb.toString());
+
+        } catch (SQLException e) {
+            log("Query Error: " + e.getMessage());
+        }
+    }
+
+    private void log(String message) {
+        outputArea.appendText("\n[LOG] " + message + "\n");
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (conn != null && !conn.isClosed()) {
+            conn.close();
+        }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
