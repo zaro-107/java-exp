@@ -1,0 +1,125 @@
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Scanner;
+
+// Interfaces and Classes (Product, LegacyItem, ProductAdapter, NewProduct, InventoryManager) 
+// remain exactly the same as your previous working code.
+
+interface Product {
+    void displayDetails();
+}
+
+class LegacyItem {
+    private String itemId;
+    private String description;
+
+    public LegacyItem(String itemId, String description) {
+        this.itemId = itemId;
+        this.description = description;
+    }
+
+    public void print() {
+        System.out.println("Legacy Item [" + itemId + "]: " + description);
+    }
+}
+
+class ProductAdapter implements Product {
+    private LegacyItem legacyItem;
+    public ProductAdapter(LegacyItem legacyItem) {
+        this.legacyItem = legacyItem;
+    }
+    @Override
+    public void displayDetails() {
+        legacyItem.print();
+    }
+}
+
+class NewProduct implements Product {
+    private String name;
+    public NewProduct(String name) {
+        this.name = name;
+    }
+    @Override
+    public void displayDetails() {
+        System.out.println("New Product: " + name);
+    }
+}
+
+class InventoryManager {
+    private static InventoryManager instance;
+    private List<Product> products;
+
+    private InventoryManager() {
+        products = new ArrayList<>();
+    }
+
+    public static InventoryManager getInstance() {
+        if (instance == null) {
+            instance = new InventoryManager();
+        }
+        return instance;
+    }
+
+    public void addProduct(Product product) {
+        products.add(product);
+    }
+
+    public Iterator<Product> returnInventory() {
+        return products.iterator();
+    }
+}
+
+// --- UPDATED MAIN CLASS WITH USER INPUT ---
+public class Main {
+    public static void main(String[] args) {
+        InventoryManager manager = InventoryManager.getInstance();
+        Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("=== Inventory Management System ===");
+        
+        while (true) {
+            System.out.println("\nSelect an option:");
+            System.out.println("1. Add New Product");
+            System.out.println("2. Add Legacy Item (via Adapter)");
+            System.out.println("3. Show Inventory and Exit");
+            System.out.print("Choice: ");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+
+            if (choice == 1) {
+                System.out.print("Enter Product Name: ");
+                String name = scanner.nextLine();
+                manager.addProduct(new NewProduct(name));
+                System.out.println("Product added successfully.");
+                
+            } else if (choice == 2) {
+                System.out.print("Enter Legacy Item ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Enter Description: ");
+                String desc = scanner.nextLine();
+                
+                // Wrap the legacy item in the adapter
+                LegacyItem oldItem = new LegacyItem(id, desc);
+                manager.addProduct(new ProductAdapter(oldItem));
+                System.out.println("Legacy item adapted and added.");
+                
+            } else if (choice == 3) {
+                break;
+            } else {
+                System.out.println("Invalid choice. Try again.");
+            }
+        }
+
+        // Displaying results using the Iterator
+        System.out.println("\n--- Final Inventory ---");
+        Iterator<Product> it = manager.returnInventory();
+        while (it.hasNext()) {
+            it.next().displayDetails();
+        }
+        
+        scanner.close();
+        System.out.println("System closed.");
+    }
+}
